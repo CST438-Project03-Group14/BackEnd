@@ -1,0 +1,77 @@
+import os
+import django
+import sys
+
+# Setup Django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'CST438.settings')
+django.setup()
+
+from api.models import User, Book, Shelf
+
+def create_mock_data():
+    # Create Users
+    users_data = [
+        {
+            'username': 'john_doe',
+            'email': 'john@example.com',
+            'password': 'password123',
+            'is_librarian': False,
+            'profile_image': 'https://example.com/john.jpg'
+        },
+        {
+            'username': 'jane_smith',
+            'email': 'jane@example.com',
+            'password': 'password123',
+            'is_librarian': False,
+            'profile_image': 'https://example.com/jane.jpg'
+        },
+        {
+            'username': 'librarian',
+            'email': 'librarian@library.com',
+            'password': 'admin123',
+            'is_librarian': True,
+            'profile_image': 'https://example.com/librarian.jpg'
+        }
+
+    ]
+
+    print("Creating mock users...")
+    for user_data in users_data:
+        try:
+            user = User.objects.create(**user_data)
+            print(f"Created user: {user.username}")
+        except Exception as e:
+            print(f"Error creating user {user_data['username']}: {str(e)}")
+
+    # Create Books
+    books_data = [
+        {
+            'title': 'The Great Gatsby',
+            'author': 'F. Scott Fitzgerald',
+            'description': 'A story of decadence and excess.',
+            'genre': 'FICTION',
+            'published_date': '1925-04-10',
+            'cover_image': 'https://example.com/gatsby.jpg',
+            'available_copies': 3
+        },
+        {
+            'title': '1984',
+            'author': 'George Orwell',
+            'description': 'A dystopian social science fiction.',
+            'genre': 'FICTION',
+            'published_date': '1949-06-08',
+            'cover_image': 'https://example.com/1984.jpg',
+            'available_copies': 2
+        }
+    ]
+
+    print("\nCreating mock books...")
+    for book_data in books_data:
+        try:
+            book = Book.objects.create(**book_data)
+            print(f"Created book: {book.title}")
+        except Exception as e:
+            print(f"Error creating book {book_data['title']}: {str(e)}")
+
+if __name__ == '__main__':
+    create_mock_data()

@@ -1,0 +1,29 @@
+try:
+    import django
+    print("✓ Django imported successfully")
+except ImportError as e:
+    print("✗ Django import failed:", e)
+
+try:
+    from rest_framework import serializers
+    print("✓ DRF imported successfully")
+except ImportError as e:
+    print("✗ DRF import failed:", e)
+
+try:
+    import corsheaders
+    print("✓ CORS headers imported successfully")
+except ImportError as e:
+    print("✗ CORS headers import failed:", e)
+
+try:
+    import mysqlclient
+    print("✓ mysqlclient imported successfully")
+except ImportError as e:
+    print("✗ mysqlclient import failed:", e)
+
+try:
+    from dotenv import load_dotenv
+    print("✓ python-dotenv imported successfully")
+except ImportError as e:
+    print("✗ python-dotenv import failed:", e)
