@@ -4,10 +4,31 @@ from ..models import User  # Updated import
 from ..serializers import UserSerializer
 # import bcrypt
 
+
 @api_view(['GET'])
-def homePage(request):
-    welcome = {'hi': 'welcome to the django api thingy.'}
-    return Response(welcome)
+def api_root(request):
+    return Response({
+        'message': 'Welcome to BookHive API',
+        'endpoints': {
+            'auth': {
+                'login': '/api/login',
+                'signup': '/api/newuser',
+                'admin_login': '/api/login/admin',
+                'logout': '/api/logout'
+            },
+            'books': {
+                'list': '/api/books',
+                'search': '/api/books/search',
+                'manage': '/api/books/manage'
+            },
+            'lists': {
+                'all': '/api/lists',
+                'user': '/api/lists/user',
+                'add': '/api/lists/add',
+                'delete': '/api/lists/delete'
+            }
+        }
+    })
 
 @api_view(['GET'])
 def getAllUsers(request):
