@@ -1,65 +1,75 @@
-import logging
-logger = logging.getLogger('api')
-
-# from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
-from django.db.models import Q
 from django.shortcuts import get_object_or_404
-from ..models import Book
-from ..serializers import BookSerializer
+from api.models import Book
+from api.serializers import BookSerializer
 
-import logging
-logger = logging.getLogger('api')
-
-@api_view(['GET'])
-def getBooks(request):
-    logger.info('Fetching all books')
-    try:
-        books = Book.objects.all()
-        logger.debug(f'Found {books.count()} books')
-        serializer = BookSerializer(books, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    except Exception as e:
-        logger.error(f'Error fetching books: {str(e)}')
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET', 'POST', 'DELETE', 'PATCH'])
 def allFunctionsBooks(request):
-    logger.info(f'Book operation: {request.method}')
-    
     if request.method == 'GET':
         book_id = request.GET.get('book_id')
         search = request.GET.get('search')
-        user_id = request.GET.get('user_id')
-        
-        logger.debug(f'GET parameters - book_id: {book_id}, search: {search}, user_id: {user_id}')
-        
-        if not book_name and not list_id:
-            logger.warning("Missing required fields book_name and list_id")
-            return Response({"error": "book_name and list_id are required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            list_object = Lists.objects.get(pk=list_id)
-            logger.debug(f"Found list with id: {list_id}")
-        except Lists.DoesNotExist:
-            logger.error(f"List with id {list_id} not found")
-            return Response({"error": "List does not exist"}, status=status.HTTP_404_NOT_FOUND)
-
-        try:
-            book = Book.objects.create(
-                book_name=book_name,
-                list=list_object,
-                book_url=request.data.get('book_url', None),
-                image_url=request.data.get('image_url', None),
-                price=request.data.get('price', None),
-                quantity=request.data.get('quantity', None),
-                description=request.data.get('description', None)
-            )
-            logger.info(f"Successfully created book: {book_name}")
+        if book_id:
+            book = get_object_or_404(Book, pk=book_id)
             serializer = BookSerializer(book)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            logger.error(f"Error creating book: {str(e)}")
-            return Response({"error": str(e)}, status=500)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        if search:
+            books = Book.objects.filter(title__icontains=search)
+            serializer = BookSerializer(books, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        books = Book.objects.all()
+        serializer = BookSerializer(books, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    elif request.method == 'POST':
+        title = request.data.get('title')
+        author = request.data.get('author')
+        genre = request.data.get('genre')
+        published_date = request.data.get('published_date')
+
+        if not title or not author or not genre or not published_date:
+            return Response({"error": "Missing required fields"}, status=status.HTTP_400_BAD_REQUEST)
+
+        book = Book.objects.create(
+            title=title,
+            author=author,
+            genre=genre,
+            published_date=published_date,
+            description=request.data.get('description', ''),
+            cover_image=request.data.get('cover_image', None),
+            available_copies=request.data.get('available_copies', 0),
+        )
+        serializer = BookSerializer(book)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    elif request.method == 'DELETE':
+        book_id = request.data.get('book_id')
+        if not book_id:
+            return Response({"error": "Book ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+        book = get_object_or_404(Book, pk=book_id)
+        book.delete()
+        return Response({"message": f"Book {book_id} deleted"}, status=status.HTTP_200_OK)
+
+    elif request.method == 'PATCH':
+        book_id = request.data.get('book_id')
+        if not book_id:
+            return Response({"error": "Book ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+        book = get_object_or_404(Book, pk=book_id)
+
+        book.title = request.data.get('title', book.title)
+        book.author = request.data.get('author', book.author)
+        book.genre = request.data.get('genre', book.genre)
+        book.published_date = request.data.get('published_date', book.published_date)
+        book.description = request.data.get('description', book.description)
+        book.cover_image = request.data.get('cover_image', book.cover_image)
+        book.available_copies = request.data.get('available_copies', book.available_copies)
+
+        book.save()
+        serializer = BookSerializer(book)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
